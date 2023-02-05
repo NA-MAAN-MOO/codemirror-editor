@@ -10,10 +10,15 @@
     "@uiw/codemirror-extensions-color": "^4.19.7",
     "@uiw/codemirror-extensions-langs": "^4.19.7",
     "@uiw/react-codemirror": "^4.19.7",
+    "randomize-hex": "^1.0.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "short-uuid": "^4.2.2",
+    "web-vitals": "^2.1.4",
+    "y-codemirror": "^3.0.1",
+    "y-webrtc": "^10.2.4"
   },
   "scripts": {
     "start": "react-scripts start",
