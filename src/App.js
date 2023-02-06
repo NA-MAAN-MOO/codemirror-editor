@@ -1,8 +1,19 @@
-import CodeMirror from '@uiw/react-codemirror';
-import { pythonLanguage } from '@codemirror/lang-python';
+import React from 'react';
+import EnterName from './EnterName';
+import SharedEditor from './SharedEditor';
+import { useStore } from './store';
 
-const pyLang = `# Press Ctrl-Space in here...`;
+function App() {
+  const username = useStore(({ username }) => username);
 
-export default function App() {
-  return <CodeMirror value={pyLang} height="200px" extensions={[pythonLanguage]} />;
+  /* 완성시 이걸로 */
+  // return <>{username ? <SharedEditor /> : <EnterName />}</>;
+
+  return (
+    <>
+      <SharedEditor />
+    </>
+  );
 }
+
+export default App;
