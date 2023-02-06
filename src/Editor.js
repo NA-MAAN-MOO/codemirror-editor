@@ -13,12 +13,16 @@ import mode from './mode-glicol';
 import { randomHex } from 'randomize-hex';
 
 const Editor = () => {
-  CodeMirror.defineSimpleMode('simplemode', mode);
-  const [name, setName] = useState('이름');
-  const [color, setColor] = useState('#008833');
   let navigate = useNavigate();
+
+  const [name, setName] = useState('사용자 이름');
+  const [color, setColor] = useState('#008833');
+
   let { id } = useParams();
   console.log(id);
+
+  CodeMirror.defineSimpleMode('simplemode', mode);
+
   const connect = (room) => {
     try {
       const ydoc = new Y.Doc();

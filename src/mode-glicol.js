@@ -1,84 +1,52 @@
-export default {
+const mode = {
+  // The start state contains the rules that are initially used
   start: [
+    // The regex matches the token, the token property contains the type
+    { regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: 'string' },
+    // You can match multiple tokens at once. Note that the captured
+    // groups must span the whole string in this case
     {
-      token: 'comment',
-      regex: '//$',
-      next: 'start',
+      regex: /(function)(\s+)([a-z$][\w$]*)/,
+      token: ['keyword', null, 'variable-2'],
     },
+    // Rules are matched in the order in which they appear, so there is
+    // no ambiguity between this one and the one above
     {
-      token: 'invisible',
-      regex: '>>|:',
+      regex: /(?:function|var|return|if|for|while|else|do|this)\b/,
+      token: 'keyword',
     },
+    { regex: /true|false|null|undefined/, token: 'atom' },
     {
-      token: 'comment',
-      regex: '//',
-      next: 'singleLineComment',
+      regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
+      token: 'number',
     },
-    {
-      token: 'variable.parameter', // compound note
-      regex: '(((((_)+)?((~|&)[a-z])((_)+)?)+)|(_))(\\s|\\n|(~|&))?\\b',
-    },
-    {
-      token: 'support.constant',
-      regex: ',',
-    },
-    {
-      token: 'meta.tag', // float
-      regex: '[-+]?([0-9]{1,}[.][0-9]+)',
-      // regex : "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?(?:L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\\b"
-    },
-    {
-      token: 'constant.character',
-      regex: '(((((_)+)?([0-9]+)((_)+)?)+)|(_))(\\s|\\n|~)?\\b',
-    },
-    {
-      token: 'support.type', // "\8n" now "everything"
-      regex: '\\\\(([0-9]+)?([a-z]+)?(_)?([0-9]+)?)+\\b',
-      // regex : "\\\\([0-9]{1,2})([a-z]+)\\b"
-    },
-    {
-      token: 'constant.character', // symbal?
-      regex: '\\\\(([0-9]+)?([a-z]+)(_)?([0-9]+)?)+\\b',
-    },
-    {
-      token: 'string', // ref
-      regex: '((~)([a-z]+(_)?)+)\\b',
-    },
-    {
-      token: 'keyword.control',
-      regex: 'spd|speed|seq|choose|euc',
-    },
-    {
-      token: 'storage.type',
-      regex: `sin|saw|squ|imp|noiz|lpf|hpf|sampler|delayn|pha|buf|freeverb|apf|comb|delay|plate|onepole|allpass|sp`,
-    },
-    {
-      token: 'constant.language',
-      regex: 'envperc|linrange|mul|add|state|ramp|point|pan|mix|monosum|\\*',
-    },
-    {
-      token: 'audio',
-      regex: '(([a-z]+(_)?)+)\\b',
-    },
-    {
-      token: 'text',
-      regex: '\\\\s+',
-    },
+    { regex: /\/\/.*/, token: 'comment' },
+    { regex: /\/(?:[^\\]|\\.)*?\//, token: 'variable-3' },
+    // A next property will cause the mode to move to a different state
+    { regex: /\/\*/, token: 'comment', next: 'comment' },
+    { regex: /[-+\/*=<>!]+/, token: 'operator' },
+    // indent and dedent properties guide autoindentation
+    { regex: /[\{\[\(]/, indent: true },
+    { regex: /[\}\]\)]/, dedent: true },
+    { regex: /[a-z$][\w$]*/, token: 'variable' },
+    // You can embed other modes with the mode property. This rule
+    // causes all code between << and >> to be highlighted with the XML
+    // mode.
+    { regex: /<</, token: 'meta', mode: { spec: 'xml', end: />>/ } },
   ],
-
-  singleLineComment: [
-    {
-      token: 'comment',
-      regex: /\\\\$/,
-      next: 'singleLineComment',
-    },
-    {
-      token: 'comment',
-      regex: /$/,
-      next: 'start',
-    },
-    {
-      defaultToken: 'comment',
-    },
+  // The multi-line comment state.
+  comment: [
+    { regex: /.*?\*\//, token: 'comment', next: 'start' },
+    { regex: /.*/, token: 'comment' },
   ],
+  // The meta property contains global information about the mode. It
+  // can contain properties like lineComment, which are supported by
+  // all modes, and also directives like dontIndentStates, which are
+  // specific to simple modes.
+  meta: {
+    dontIndentStates: ['comment'],
+    lineComment: '//',
+  },
 };
+
+export default mode;
