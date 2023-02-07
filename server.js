@@ -1,16 +1,27 @@
-const express = require('express');
-const app = express();
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require('socket.io');
-const cors = require('cors');
-const io = new Server(server); // 서버
-const { createClient } = require('redis');
-const { v4 } = require('uuid');
-const moment = require('moment');
-const { json } = require('body-parser');
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
+import cors from 'cors';
+import { createClient } from 'redis';
+import { v4 } from 'uuid';
+import moment from 'moment';
+import pkg from 'body-parser';
+import chalk from 'chalk';
 
-const { blueBright, greenBright, redBright, yellowBright } = require('chalk');
+// import { colorNames } from 'chalk';
+
+// const express = require('express');
+const app = express();
+// const http = require('http');
+const server = http.createServer(app);
+// const { Server } = require('socket.io');
+// const cors = require('cors');
+const io = new Server(server); // 서버
+// const { createClient } = require('redis');
+// const { v4 } = require('uuid');
+// const moment = require('moment');
+// const { json } = require('body-parser');
+const { json } = pkg;
 
 const client = createClient();
 app.use(json());
@@ -21,9 +32,9 @@ client.on('error', console.error);
 /* default client configuration */
 client
   .connect()
-  .then(() => console.log(blueBright.bold('Connected to redis locally!')))
+  .then(() => console.log(chalk.bold.blue('Connected to redis locally!')))
   .catch(() => {
-    console.error(redBright.bold('Error connecting to redis'));
+    console.error(chalk.bold.red('Error connecting to redis'));
   });
 
 app.get('/', (req, res) => {
@@ -55,7 +66,7 @@ app.post('/create-room-with-user', async (req, res) => {
 io: 연결된 모든 소켓
 socket: 특정한 소켓 */
 io.on('connection', (socket) => {
-  console.log(yellowBright.bold(`새로운 유저: ${socket.id}`));
+  console.log(chalk.bold.yellow(`새로운 유저: ${socket.id}`));
 
   socket.on('CODE_CHANGED', async (code) => {
     const { roomId, username } = await client.hGetAll(socket.id); // 해당 소켓아이디로 방ID, 유저네임 알아냄
@@ -103,5 +114,5 @@ io.on('connection', (socket) => {
 
 /* 서버 포트 */
 server.listen(3001, () => {
-  console.log(greenBright.bold('listening on *:3001'));
+  console.log(chalk.bold.green('listening on *:3001'));
 });

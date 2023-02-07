@@ -1,19 +1,13 @@
 import React, { useRef } from 'react';
-import {
-  Input,
-  Button,
-  InputGroup,
-  InputRightElement,
-  useToast,
-} from '@chakra-ui/react';
-import { useMutation } from 'react-query';
-import { useStore } from './store';
+import { useToast } from '@chakra-ui/react';
+import { useMutation, useQueryClient } from 'react-query';
+import { useStore } from './store.js';
 import axios from 'axios';
 
 function EnterName() {
   const inputRef = useRef();
   const roomIdRef = useRef();
-  // const toast = useToast(); // ui 문제
+  // // const toast = useToast(); // ui 문제
   const { setUsername, setRoomId } = useStore(({ setUsername, setRoomId }) => ({
     setUsername,
     setRoomId,
@@ -82,32 +76,26 @@ function EnterName() {
 
   return (
     <>
-      <InputGroup size="lg">
-        <Input
+      <div>
+        <input
           pr="4.5rem"
           size="lg"
           placeholder="Enter your name"
           ref={inputRef}
         />
-        <InputRightElement width="4.5rem">
-          <Button size="lg" onClick={createRoom}>
-            Go!
-          </Button>
-        </InputRightElement>
-      </InputGroup>
-      <InputGroup size="lg">
-        <Input
+        {/* <button size="lg" onClick={createRoom}> */}
+        <button size="lg">Go!</button>
+      </div>
+      <div>
+        <input
           pr="4.5rem"
           size="lg"
           placeholder="Enter a room id"
           ref={roomIdRef}
         />
-        <InputRightElement width="4.5rem">
-          <Button size="lg" onClick={enterRoom}>
-            Join!
-          </Button>
-        </InputRightElement>
-      </InputGroup>
+        {/* <button size="lg" onClick={enterRoom}> */}
+        <button size="lg">Join!</button>
+      </div>
     </>
   );
 }

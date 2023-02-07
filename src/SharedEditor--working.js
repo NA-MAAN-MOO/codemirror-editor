@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useStore } from './store';
+import { useStore } from './store.js';
 
 /* codemirror */
 // import { CodeMirror, useCodeMirror } from '@uiw/react-codemirror';
