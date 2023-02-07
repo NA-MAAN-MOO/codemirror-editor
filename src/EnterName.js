@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import { useToast } from '@chakra-ui/react';
 import { useMutation, useQueryClient } from 'react-query';
 import { useStore } from './store.js';
 import axios from 'axios';
@@ -7,7 +6,6 @@ import axios from 'axios';
 function EnterName() {
   const inputRef = useRef();
   const roomIdRef = useRef();
-  // // const toast = useToast(); // ui 문제
   const { setUsername, setRoomId } = useStore(({ setUsername, setRoomId }) => ({
     setUsername,
     setRoomId,
@@ -24,16 +22,13 @@ function EnterName() {
   const createRoom = async () => {
     const value = inputRef.current?.value;
 
-    /* ui 문제 */
-    // if (!value) {
-    //   toast({
-    //     title: 'Please enter your username',
-    //     status: 'error',
-    //     duration: 9000,
-    //     isClosable: true,
-    //   });
-    //   return;
-    // }
+    /* 유저네임 입력 에러처리 */
+    if (!value) {
+      alert('유저네임 입력하세요');
+
+      return;
+    }
+
     await mutateAsync(
       /* "Go!" request */
       { username: value, uri: 'create-room-with-user' },
@@ -41,14 +36,7 @@ function EnterName() {
         // roomID return 받음
         onSuccess: ({ data }) => {
           setRoomId(data.roomId);
-          /* ui 문제 */
-          // toast({
-          //   title: 'We created your username, you will find yourself in a room',
-          //   description: 'Share the room id with anyone',
-          //   status: 'success',
-          //   duration: 9000,
-          //   isClosable: true,
-          // });
+          alert('유저네임 생성 완료. 방 ID를 다른 사람에게 공유하세요');
         },
       }
     );
@@ -57,21 +45,16 @@ function EnterName() {
 
   /* 기존 방 참가: JOIN 누르면 실행될 함수 */
   const enterRoom = async () => {
-    const value = inputRef.current?.value;
+    const nameInput = inputRef.current?.value;
     const roomIdValue = roomIdRef.current?.value;
 
-    if (!value || !roomIdValue) {
-      /* ui 문제 */
-      // toast({
-      //   title: 'Please enter text in both inputs',
-      //   status: 'error',
-      //   duration: 9000,
-      //   isClosable: true,
-      // });
+    /* 입력 에러처리 */
+    if (!nameInput || !roomIdValue) {
+      alert('이름과 방 ID 입력해주세요');
       return;
     }
     setRoomId(roomIdValue);
-    setUsername(value);
+    setUsername(nameInput);
   };
 
   return (
@@ -83,8 +66,8 @@ function EnterName() {
           placeholder="Enter your name"
           ref={inputRef}
         />
-        {/* <button size="lg" onClick={createRoom}> */}
-        <button size="lg">Go!</button>
+        <button size="lg" onClick={createRoom}></button>
+        {/* <button size="lg">Go!</button> */}
       </div>
       <div>
         <input
@@ -93,8 +76,8 @@ function EnterName() {
           placeholder="Enter a room id"
           ref={roomIdRef}
         />
-        {/* <button size="lg" onClick={enterRoom}> */}
-        <button size="lg">Join!</button>
+        <button size="lg" onClick={enterRoom}></button>
+        {/* <button size="lg">Join!</button> */}
       </div>
     </>
   );
