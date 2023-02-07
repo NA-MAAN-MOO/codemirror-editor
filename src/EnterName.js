@@ -1,9 +1,9 @@
 import React, { useRef } from 'react';
-import {
-  useMutation,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query';
+// import {
+//   useMutation,
+//   QueryClient,
+//   QueryClientProvider,
+// } from '@tanstack/react-query';
 import axios from 'axios';
 import { useStore } from './store.js';
 

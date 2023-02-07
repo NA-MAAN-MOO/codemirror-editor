@@ -37,24 +37,12 @@ function SharedEditor() {
     // console.log(transaction.state.doc.toString()); // "hello editor"
     // view.dispatch(transaction);
 
-    /* hmmm 위젯 */
-    // const widget = document.createElement('span');
-    // widget.textContent = 'hmmm?';
-    // widget.style.cssText =
-    //   'background: #F37381; padding: 0px 3px; color: #F3F5F1; cursor: pointer;';
-
-    /* 유저들 커서 */
-    // const bookMark = editor.setBookmark({ line: 1, pos: 1 }, { widget })
-    // widget.onclick = () => bookMark.clear()
-    // console.log(editor.getAllMarks())
-
-    // 서버로부터 "코드변경" 알림 받음
-
     /* 소켓 연결!!! */
     const socket = io('http://localhost:3001/', {
       transports: ['websocket'],
     });
 
+    /* 서버로부터 "코드변경" 알림 받음 */
     socket.on('CODE_CHANGED', (code) => {
       console.log(code);
       if (code !== view.state.doc.toString()) {
@@ -96,35 +84,56 @@ function SharedEditor() {
 
     /* cursor activity 이벤트 있던 곳 */
 
+    /* 이벤트 리스너 */
     // editor.current.addEventListener('input', (e) => {
     //   // console.log(e);
     //   if ()
     //   socket.emit('CODE_CHANGED', state.doc.toString());
     // });
 
-    const MyViewPlugin = {
-      // The update method will be called whenever there is a change to the view
-      update(view, prevState) {
-        // Only emit the socket event if the value of the editor changed
-        if (prevState.state.doc.toString() !== view.state.doc.toString()) {
-          // Emit the socket event with the current value of the editor
-          socket.emit('CODE_CHANGED', view.state.doc.toString());
-        }
-      },
-    };
+    /* 첫번째 뷰플러그인 */
+    // const MyViewPlugin = {
+    //   // The update method will be called whenever there is a change to the view
+    //   update(view, prevState) {
+    //     // Only emit the socket event if the value of the editor changed
+    //     if (prevState.state.doc.toString() !== view.state.doc.toString()) {
+    //       // Emit the socket event with the current value of the editor
+    //       socket.emit('CODE_CHANGED', view.state.doc.toString());
+    //     }
+    //   },
+    // };
+
+    /* 두번째 뷰 플러그인 */
+    // const MyViewPlugin = (view) => {
+    //   return {
+    //     update(update) {
+    //       if (update.docChanged) {
+    //         console.log('view changed!!!!');
+    //         socket.emit('CODE_CHANGED', view.state.doc.toString());
+    //      }
+    //     },
+    //   };
+    // };
 
     const view = new EditorView({
       state,
-      plugins: [MyViewPlugin],
       parent: editor.current,
-      // update: (update) => {
-      //   update.on(update.transactions, (tr) => {
-      //     state.dispatch(tr);
-      //     const code = state.toString();
-      //     console.log('코드바뀜');
-      //     socket.emit('CODE_CHANGED', code);
-      //   });
-      // },
+      dispatch: (tr) => {
+        // this will be called every time the editor view is updated
+        // console.log(tr.state.doc.toString()); // 변한 내용 출력
+        // console.log(tr);
+        // view.dispatch(tr);
+        // console.log('Editor content updated:', tr.state.doc.toString());
+        const currentContent = tr.state.doc;
+        if (currentContent !== tr.startState.doc) {
+          view.update([tr]);
+          console.log('내용 바꼈다!!', currentContent);
+          socket.emit('CODE_CHANGED', tr.state.doc.toString());
+        }
+
+        // you can send the changes to the server using socket.emit() here
+        // or perform any other action that you need
+      },
     });
 
     return () => {

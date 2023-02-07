@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App.js';
 import reportWebVitals from './reportWebVitals.js';
-import { useMutation, QueryClient, QueryClientProvider } from 'react-query'; //1번
+// import { useMutation, QueryClient, QueryClientProvider } from 'react-query'; //1번
 // import { redisClient } from './redisClient.js';
 
 /* 2번 */
