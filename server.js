@@ -9,17 +9,9 @@ import pkg from 'body-parser';
 import chalk from 'chalk';
 // import { redisClient } from './redisClient.js';
 
-// const express = require('express');
 const app = express();
-// const http = require('http');
 const server = http.createServer(app);
-// const { Server } = require('socket.io');
-// const cors = require('cors');
 const io = new Server(server); // 서버
-// const { createClient } = require('redis');
-// const { v4 } = require('uuid');
-// const moment = require('moment');
-// const { json } = require('body-parser');
 const { json } = pkg;
 
 const redisClient = createClient();
@@ -61,7 +53,7 @@ app.post('/create-room-with-user', async (req, res) => {
       console.error(1, err);
     });
 
-  // await client.lSet(`${roomId}:users`, [])
+  // await redisClient.lSet(`${roomId}:users`, []);
 
   res.status(201).send({ roomId }); // return success & the room ID
 });
@@ -70,13 +62,13 @@ app.post('/create-room-with-user', async (req, res) => {
 io: 연결된 모든 소켓
 socket: 특정한 소켓 */
 io.on('connection', (socket) => {
-  console.log(chalk.bold.yellow(`새로운 유저: ${socket.id}`));
+  console.log(chalk.bold.yellow(`새로운 유저 입장: ${socket.id}`));
 
   socket.on('CODE_CHANGED', async (code) => {
     const { roomId, username } = await redisClient.hGetAll(socket.id); // 해당 소켓아이디로 방ID, 유저네임 알아냄
     const roomName = `ROOM:${roomId}`;
-    console.log(roomName);
-    // io.emit('CODE_CHANGED', code)
+    console.log(`이 방 코드 변경됨: ${roomName}`);
+    // io.emit('CODE_CHANGED', code); // 얘는 모든 사람들에게 보내는 것
     socket.to(roomName).emit('CODE_CHANGED', code); // "코드변경" 이벤트 다른 소켓들에게 알림
   });
 

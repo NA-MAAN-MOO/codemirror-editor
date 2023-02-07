@@ -47,7 +47,6 @@ function EnterName() {
       );
 
       setRoomId(data.roomId);
-      setUsername(nameInputValue);
 
       console.log(`onSuccess! 방 ID는 : ${data.roomId}`);
       alert('유저네임 생성 완료. 방 ID를 다른 사람에게 공유하세요');
@@ -55,6 +54,7 @@ function EnterName() {
       console.error(error);
       alert('생성 실패');
     }
+    setUsername(nameInputValue);
 
     //   /* "Go!" request */
     //   await mutateAsync(
