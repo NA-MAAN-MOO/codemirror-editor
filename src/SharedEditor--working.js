@@ -50,7 +50,7 @@ function SharedEditor() {
 
     // 서버로부터 "코드변경" 알림 받음
     socket.on('CODE_CHANGED', (code) => {
-      console.log(code);
+      console.log(`change! : ${code}`);
       // editor.setValue(code);
     });
 
@@ -70,7 +70,7 @@ function SharedEditor() {
     /* 서버에서 "방 연결" 알림 받으면 */
     socket.on('ROOM:CONNECTION', (users) => {
       setUsers(users); // 유저 정보 변경
-      console.log(users);
+      console.log(`유저 리스트 : ${users}`);
     });
 
     /* 코드미러가 변화를 알려줌(입력, 삭제, 등) */
