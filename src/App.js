@@ -9,6 +9,10 @@ function App() {
   /* 완성시 이걸로 */
   // return <>{username ? <SharedEditor /> : <EnterName />}</>;
 
+  /* test */
+  // return <>으악</>;
+
+  /* 편집기만 */
   return (
     <>
       <SharedEditor />
