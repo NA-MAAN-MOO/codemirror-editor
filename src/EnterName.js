@@ -27,8 +27,6 @@ function EnterName() {
   //   });
   // });
 
-  console.log('mutation 성공');
-
   /* 새로운 방 생성: GO 누르면 실행 될 함수 */
   const createRoom = async () => {
     const nameInputValue = inputRef.current?.value;
@@ -86,6 +84,8 @@ function EnterName() {
 
     setRoomId(roomIdValue);
     setUsername(nameInput);
+    alert('방 입장 성공');
+    console.log('룸ID, 유저네임 스테이트 변경 성공');
   };
 
   return (

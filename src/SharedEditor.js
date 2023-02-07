@@ -76,9 +76,9 @@ function SharedEditor() {
         <p>Your username is: {username}</p>
         <p>The room ID is: {roomId}</p>
         <p>How many pople are connected: {users.length}</p>
-        <p>Your username is: 네이름</p>
-        <p>The room ID is: 네 아이디</p>
-        <p>How many pople are connected: 몇명</p>
+        {/* <p>Your username is: 네이름</p> */}
+        {/* <p>The room ID is: 네 아이디</p> */}
+        {/* <p>How many pople are connected: 몇명</p> */}
       </p>
       <div ref={editor}></div>
     </>

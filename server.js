@@ -48,11 +48,15 @@ app.post('/create-room-with-user', async (req, res) => {
 
   await redisClient
     /* room 정보 해쉬로 저장 */
-    .hSet(`${roomId}:info`, {
-      created: moment(),
-      updated: moment(),
-      // code: '에디터에 "현재" 저장된 코드가 들어갈 곳, 새 유저가 들어오면 이거 추출해서 리턴해줘야 새유저에게 보임'
-    })
+    .hSet(
+      `${roomId}:info`,
+      roomId,
+      JSON.stringify({
+        created: moment(),
+        updated: moment(),
+        // code: '에디터에 "현재" 저장된 코드가 들어갈 곳, 새 유저가 들어오면 이거 추출해서 리턴해줘야 새유저에게 보임'
+      })
+    )
     .catch((err) => {
       console.error(1, err);
     });
@@ -81,7 +85,11 @@ io.on('connection', (socket) => {
   // "방 연결" 받으면 실행할 코드
   socket.on('CONNECTED_TO_ROOM', async ({ roomId, username }) => {
     await redisClient.lPush(`${roomId}:users`, `${username}`);
-    await redisClient.hSet(socket.id, { roomId, username }); // 해쉬셋; key_socket.id , data_방id, 유저네임
+    await redisClient.hSet(
+      socket.id,
+      roomId,
+      JSON.stringify({ roomId, username })
+    ); // 해쉬셋; key_socket.id , data_방id, 유저네임
     const users = await redisClient.lRange(`${roomId}:users`, 0, -1);
     const roomName = `ROOM:${roomId}`; // 방 이름
     socket.join(roomName);
