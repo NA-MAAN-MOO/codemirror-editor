@@ -23,21 +23,41 @@ function SharedEditor() {
     roomId,
   })); // useStore에 저장한 것 디스트럭쳐링
 
+  /* useEffect 밖에다가 써봄 */
+  const [state, setState] = useState(
+    EditorState.create({
+      doc: pyLang,
+      extensions: [basicSetup, python()],
+    })
+  );
+
   useEffect(() => {
     /* 에디터 인스턴스 생성 */
     const log = (event) => console.log(event);
     // editor.current.addEventListener("input", log);
-    const state = EditorState.create({
-      doc: pyLang,
-      extensions: [basicSetup, python()],
+
+    // const state = EditorState.create({
+    //   doc: pyLang,
+    //   extensions: [basicSetup, python()],
+    // });
+
+    const view = new EditorView({
+      state,
+      parent: editor.current,
+      update: (update) => {
+        update.on(update.transactions, (tr) => {
+          state.dispatch(tr);
+          const code = state.toString();
+          socket.emit('CODE_CHANGED', code);
+        });
+      },
     });
-    const view = new EditorView({ state, parent: editor.current });
 
     /* hmmm 위젯 */
-    const widget = document.createElement('span');
-    widget.textContent = 'hmmm?';
-    widget.style.cssText =
-      'background: #F37381; padding: 0px 3px; color: #F3F5F1; cursor: pointer;';
+    // const widget = document.createElement('span');
+    // widget.textContent = 'hmmm?';
+    // widget.style.cssText =
+    //   'background: #F37381; padding: 0px 3px; color: #F3F5F1; cursor: pointer;';
 
     /* 유저들 커서 */
     // const bookMark = editor.setBookmark({ line: 1, pos: 1 }, { widget })
@@ -52,8 +72,6 @@ function SharedEditor() {
     // 서버로부터 "코드변경" 알림 받음
     socket.on('CODE_CHANGED', (code) => {
       console.log(code);
-      editor.setValue(code);
-      socket.to(`ROOM:${roomId}`).emit('CODE_CHANGED', code); // "코드변경" 이벤트 다른 소켓들에게 알림
     });
 
     socket.on('connect_error', (err) => {
@@ -78,22 +96,23 @@ function SharedEditor() {
     });
 
     /* 코드미러가 변화를 알려줌(입력, 삭제, 등) */
-    editor.on('change', (instance, changes) => {
-      const { origin } = changes;
-      // if (origin === '+input' || origin === '+delete' || origin === 'cut') {
-      if (origin !== 'setValue') {
-        // setValue라는 변화가 아니면
-        socket.emit('CODE_CHANGED', instance.getValue()); // 코드변경 이벤트 알림
-      }
-    });
-    editor.on('cursorActivity', (instance) => {
-      // console.log(instance.cursorCoords())
-    });
+    // editor.on('change', (instance, changes) => {
+    //   const { origin } = changes;
+    //   // if (origin === '+input' || origin === '+delete' || origin === 'cut') {
+    //   if (origin !== 'setValue') {
+    //     // setValue라는 변화가 아니면
+    //     socket.emit('CODE_CHANGED', instance.getValue()); // 코드변경 이벤트 알림
+    //   }
+    // });
+
+    // editor.on('cursorActivity', (instance) => {
+    //   // console.log(instance.cursorCoords())
+    // });
 
     return () => {
       socket.emit('DISSCONNECT_FROM_ROOM', { roomId, username });
       view.destroy(); // view가 여러개 생기지 못하게 방지
-      // editor.current.removeEventListener("input", log);
+      // view.current.removeEventListener("input", log);
     };
   }, []);
 
@@ -107,7 +126,7 @@ function SharedEditor() {
         {/* <div>Your username is: 네이름</div> */}
         {/* <div>The room ID is: 네 아이디</div> */}
         {/* <div>How many pople are connected: 몇명</div> */}
-        <div ref={editor}></div>
+        <div ref={editor} state={state} />
       </div>
     </>
   );
