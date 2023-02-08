@@ -18,17 +18,14 @@ function SharedEditor() {
   const { username, roomId } = useStore(({ username, roomId }) => ({
     username,
     roomId,
-  })); // useStore에 저장한 것 디스트럭쳐링
+  }));
 
   useEffect(() => {
     /* 에디터 인스턴스 생성 */
-    const log = (event) => console.log(event.data);
-    // editor.current.addEventListener('input', log);
-
     const state = EditorState.create({
-      doc: `# Press Ctrl-Space in here... 포항항\n\n\n\n`,
       extensions: [basicSetup, python()],
     });
+    // editor.current.addEventListener('input', (event) => console.log(event.data));
 
     /* view의 update 메소드를 통해 내용 바꿈 test */
     // let transaction = state.update({
@@ -44,7 +41,7 @@ function SharedEditor() {
 
     /* 서버로부터 "코드변경" 알림 받음 */
     socket.on('CODE_CHANGED', (code) => {
-      console.log(code + '왔다!');
+      // console.log(code + '왔다!');
       if (code !== view.state.doc.toString()) {
         view.dispatch({
           changes: { from: 0, to: view.state.doc.length, insert: code },
@@ -91,50 +88,20 @@ function SharedEditor() {
     //   socket.emit('CODE_CHANGED', state.doc.toString());
     // });
 
-    /* 첫번째 뷰플러그인 */
-    // const MyViewPlugin = {
-    //   // The update method will be called whenever there is a change to the view
-    //   update(view, prevState) {
-    //     // Only emit the socket event if the value of the editor changed
-    //     if (prevState.state.doc.toString() !== view.state.doc.toString()) {
-    //       // Emit the socket event with the current value of the editor
-    //       socket.emit('CODE_CHANGED', view.state.doc.toString());
-    //     }
-    //   },
-    // };
-
-    /* 두번째 뷰 플러그인 */
-    // const MyViewPlugin = (view) => {
-    //   return {
-    //     update(update) {
-    //       if (update.docChanged) {
-    //         console.log('view changed!!!!');
-    //         socket.emit('CODE_CHANGED', view.state.doc.toString());
-    //      }
-    //     },
-    //   };
-    // };
-
     const view = new EditorView({
       state,
       parent: editor.current,
       dispatch: (tr) => {
-        // this will be called every time the editor view is updated
         // console.log(tr.state.doc.toString()); // 변한 내용 출력
-        // console.log(tr);
         // view.dispatch(tr);
         // console.log('Editor content updated:', tr.state.doc.toString());
         const currentContent = tr.state.doc;
         if (currentContent !== tr.startState.doc) {
           view.update([tr]);
-          // console.log('내용 바꼈다!!', currentContent);
           // console.log(tr.isUserEvent('input'));
           // console.log(tr.newSelection);
           socket.emit('CODE_CHANGED', tr.state.doc.toString());
         }
-
-        // you can send the changes to the server using socket.emit() here
-        // or perform any other action that you need
       },
     });
 

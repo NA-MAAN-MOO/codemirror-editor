@@ -15,6 +15,7 @@ const io = new Server(server); // 서버
 const { json } = pkg;
 
 const redisClient = createClient();
+const hashField = 'code-mirror';
 
 app.use(json());
 app.use(cors());
@@ -30,19 +31,19 @@ redisClient
   });
 
 app.get('/', (req, res) => {
-  res.send({ msg: '서버는 사라이따' });
+  res.send({ msg: "I'm alive" });
 });
 
 /* "Go!"(방 만들기)를 누르면 보내는 응답 */
 app.post('/create-room-with-user', async (req, res) => {
   const { username } = req.body;
-  const roomId = v4();
+  const roomId = v4(); // roomID 최초 생성
 
   await redisClient
     /* room 정보 해쉬로 저장 */
     .hSet(
       `${roomId}:info`,
-      roomId,
+      hashField,
       JSON.stringify({
         created: moment(),
         updated: moment(),
@@ -64,27 +65,38 @@ socket: 특정한 소켓 */
 io.on('connection', (socket) => {
   console.log(chalk.bold.yellow(`새로운 유저 입장: ${socket.id}`));
 
+  /* 코드 변경 알림 받음 */
   socket.on('CODE_CHANGED', async (code) => {
-    console.log(`코드 변경`);
-    const { roomId, username } = await redisClient.hGetAll(socket.id); // 해당 소켓아이디로 방ID, 유저네임 알아냄
-    const roomName = `ROOM:${roomId}`;
+    // console.log(`코드 변경`);
+
+    // 해당 소켓아이디로 방ID, 유저네임 알아냄
+    let result = await redisClient.hGet(socket.id, hashField);
+    const { roomId, username } = JSON.parse(result);
+
+    // roomName 정의
+    const roomName = `ROOMNAME:${roomId}`;
     console.log(`이 방 코드 변경됨: ${roomName}`);
+
+    // 동일한 roomName에 있는 소켓에게 코드 전송
     io.emit('CODE_CHANGED', code); // 얘는 모든 사람들에게 보내는 것
     // socket.to(roomName).emit('CODE_CHANGED', code); // "코드변경" 이벤트 다른 소켓들에게 알림
   });
 
   socket.on('DISSCONNECT_FROM_ROOM', async ({ roomId, username }) => {});
 
-  // "방 연결" 받으면 실행할 코드
+  /* "방 연결" 알림 받음 */
   socket.on('CONNECTED_TO_ROOM', async ({ roomId, username }) => {
     await redisClient.lPush(`${roomId}:users`, `${username}`);
     await redisClient.hSet(
       socket.id,
-      roomId,
+      hashField,
       JSON.stringify({ roomId, username })
     ); // 해쉬셋; key_socket.id , data_방id, 유저네임
+
     const users = await redisClient.lRange(`${roomId}:users`, 0, -1);
-    const roomName = `ROOM:${roomId}`; // 방 이름
+    const roomName = `CONNECTED-ROOM:${roomId}`; // 방 이름
+    console.log(`이 방 연결됨: ${roomName}`);
+
     socket.join(roomName);
     io.in(roomName).emit('ROOM:CONNECTION', users); // 방의 모든 유저에게 "방 연결" 알림 + 유저 리스트 알림
   });
@@ -94,7 +106,8 @@ io.on('connection', (socket) => {
     // TODO if 2 users have the same name
 
     // 해쉬에 저장된거 디스트럭쳐링 (소켓 아이디로, 룸ID,유저네임 알아냄)
-    const { roomId, username } = await redisClient.hGetAll(socket.id);
+    let result = await redisClient.hGet(socket.id, hashField);
+    const { roomId, username } = JSON.parse(result); // 해당 소켓아이디로 방ID, 유저네임 알아냄
 
     // 방금 나간 유저 식별해서 유저리스트에서 제거하기
     const users = await redisClient.lRange(`${roomId}:users`, 0, -1);
