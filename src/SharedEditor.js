@@ -44,7 +44,7 @@ function SharedEditor() {
 
     /* 서버로부터 "코드변경" 알림 받음 */
     socket.on('CODE_CHANGED', (code) => {
-      console.log(code);
+      console.log(code + '왔다!');
       if (code !== view.state.doc.toString()) {
         view.dispatch({
           changes: { from: 0, to: view.state.doc.length, insert: code },
@@ -127,7 +127,9 @@ function SharedEditor() {
         const currentContent = tr.state.doc;
         if (currentContent !== tr.startState.doc) {
           view.update([tr]);
-          console.log('내용 바꼈다!!', currentContent);
+          // console.log('내용 바꼈다!!', currentContent);
+          // console.log(tr.isUserEvent('input'));
+          // console.log(tr.newSelection);
           socket.emit('CODE_CHANGED', tr.state.doc.toString());
         }
 

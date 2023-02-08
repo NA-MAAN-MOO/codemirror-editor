@@ -65,11 +65,12 @@ io.on('connection', (socket) => {
   console.log(chalk.bold.yellow(`새로운 유저 입장: ${socket.id}`));
 
   socket.on('CODE_CHANGED', async (code) => {
+    console.log(`코드 변경`);
     const { roomId, username } = await redisClient.hGetAll(socket.id); // 해당 소켓아이디로 방ID, 유저네임 알아냄
     const roomName = `ROOM:${roomId}`;
     console.log(`이 방 코드 변경됨: ${roomName}`);
-    // io.emit('CODE_CHANGED', code); // 얘는 모든 사람들에게 보내는 것
-    socket.to(roomName).emit('CODE_CHANGED', code); // "코드변경" 이벤트 다른 소켓들에게 알림
+    io.emit('CODE_CHANGED', code); // 얘는 모든 사람들에게 보내는 것
+    // socket.to(roomName).emit('CODE_CHANGED', code); // "코드변경" 이벤트 다른 소켓들에게 알림
   });
 
   socket.on('DISSCONNECT_FROM_ROOM', async ({ roomId, username }) => {});
