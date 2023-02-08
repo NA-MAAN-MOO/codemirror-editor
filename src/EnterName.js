@@ -17,7 +17,7 @@ function EnterName() {
     setRoomId,
   }));
 
-  console.log('state 디스트럭쳐링 성공');
+  // console.log('state 디스트럭쳐링 성공');
 
   /* 뮤테이션 인자로 넘겨진 post 요청이 mutateAsync가 호출되면 실행 됨 */
   // const { mutateAsync } = useMutation(({ username, roomId, uri }) => {

@@ -64,10 +64,17 @@ function SharedEditor() {
     });
 
     /* 서버에서 "방 연결" 알림 받으면 */
-    socket.on('ROOM:CONNECTION', (users) => {
+    socket.on('ROOM:CONNECTION', (data) => {
       // console.log('방 연결 됨');
-      setUsers(users); // 유저 정보 변경
-      console.log(`유저정보리스트 update : ${users}`);
+      setUsers(data[0]); // 유저 정보 변경
+
+      // TODO: 서버에 저장된 현재 코드 보여주기
+      console.log(`현재 저장된 방 코드 : ${data[1]}`);
+      view.dispatch({
+        changes: { from: 0, to: view.state.doc.length, insert: data[1] },
+      });
+
+      console.log(`유저리스트 update : ${data[0]}`);
     });
 
     /* 에디터가 변화를 알려줌(입력, 삭제, 등) */

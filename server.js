@@ -47,7 +47,7 @@ app.post('/create-room-with-user', async (req, res) => {
       JSON.stringify({
         created: moment(),
         updated: moment(),
-        // code: '에디터에 "현재" 저장된 코드가 들어갈 곳, 새 유저가 들어오면 이거 추출해서 리턴해줘야 새유저에게 보임'
+        currentCode: '현재 저장된 코드라구욧', // code: '에디터에 "현재" 저장된 코드가 들어갈 곳, 새 유저가 들어오면 이거 추출해서 리턴해줘야 새유저에게 보임'
       })
     )
     .catch((err) => {
@@ -77,8 +77,18 @@ io.on('connection', (socket) => {
     const roomName = `ROOMNAME:${roomId}`;
     console.log(`이 방 코드 변경됨: ${roomName}`);
 
+    // TODO 현재 코드 해쉬에 저장
+    await redisClient.hGet(`${roomId}:info`, hashField, (err, data) => {
+      if (err) throw err;
+      let parsedData = JSON.parse(data);
+      parsedData.currentCode = code;
+      console.log(code);
+      redisClient.hSet(`${roomId}:info`, hashField, JSON.stringify(parsedData));
+    });
+
     // 동일한 roomName에 있는 소켓에게 코드 전송
     io.emit('CODE_CHANGED', code); // 얘는 모든 사람들에게 보내는 것
+    // socket.broadcast.to(roomName).emit('CODE_CHANGED', code);
     // socket.to(roomName).emit('CODE_CHANGED', code); // "코드변경" 이벤트 다른 소켓들에게 알림
   });
 
@@ -98,7 +108,15 @@ io.on('connection', (socket) => {
     console.log(`이 방 연결됨: ${roomName}`);
 
     socket.join(roomName);
-    io.in(roomName).emit('ROOM:CONNECTION', users); // 방의 모든 유저에게 "방 연결" 알림 + 유저 리스트 알림
+
+    // 현재 방 정보 보내줌
+    let data = await redisClient.hGet(`${roomId}:info`, hashField);
+
+    // io.in(roomName).emit('ROOM:CONNECTION', [users, JSON.parse(data).currentCode]); // 방의 모든 유저에게 "방 연결" 알림 + 유저 리스트, 코드 전송
+    io.in(roomName).emit('ROOM:CONNECTION', [
+      users,
+      JSON.parse(data).currentCode,
+    ]); // 방의 모든 유저에게 "방 연결" 알림 + 유저 리스트, 코드 전송
   });
 
   /* 방 연결이 해제되면 발생할 일  */
