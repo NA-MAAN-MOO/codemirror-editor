@@ -41,7 +41,7 @@ function SharedEditor() {
 
     /* 서버로부터 "코드변경" 알림 받음 */
     socket.on('CODE_CHANGED', (code) => {
-      // console.log(code + '왔다!');
+      console.log('코드왔다!');
       if (code !== view.state.doc.toString()) {
         view.dispatch({
           changes: { from: 0, to: view.state.doc.length, insert: code },
@@ -64,12 +64,13 @@ function SharedEditor() {
     });
 
     /* 서버에서 "방 연결" 알림 받으면 */
-    socket.on('ROOM:CONNECTION', (data) => {
+    socket.on('ROOM:CONNECTION', async (data) => {
       // console.log('방 연결 됨');
       setUsers(data[0]); // 유저 정보 변경
 
       // TODO: 서버에 저장된 현재 코드 보여주기
       console.log(`현재 저장된 방 코드 : ${data[1]}`);
+
       view.dispatch({
         changes: { from: 0, to: view.state.doc.length, insert: data[1] },
       });

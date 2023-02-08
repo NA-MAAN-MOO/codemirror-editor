@@ -47,7 +47,7 @@ app.post('/create-room-with-user', async (req, res) => {
       JSON.stringify({
         created: moment(),
         updated: moment(),
-        currentCode: '현재 저장된 코드라구욧', // code: '에디터에 "현재" 저장된 코드가 들어갈 곳, 새 유저가 들어오면 이거 추출해서 리턴해줘야 새유저에게 보임'
+        currentCode: '', // 에디터의 '현재' 코드, 새 유저가 들어오면 추출 -> 리턴
       })
     )
     .catch((err) => {
@@ -73,11 +73,11 @@ io.on('connection', (socket) => {
     let result = await redisClient.hGet(socket.id, hashField);
     const { roomId, username } = JSON.parse(result);
 
-    // roomName 정의
+    // roomName 정의(※ 스트링 값 수정시 io 에러나니 바꾸지 말 것)
     const roomName = `ROOMNAME:${roomId}`;
     console.log(`이 방 코드 변경됨: ${roomName}`);
 
-    // TODO 현재 코드 해쉬에 저장
+    // 현재 코드 해쉬에 저장
     await redisClient.hGet(`${roomId}:info`, hashField, (err, data) => {
       if (err) throw err;
       let parsedData = JSON.parse(data);
@@ -87,9 +87,10 @@ io.on('connection', (socket) => {
     });
 
     // 동일한 roomName에 있는 소켓에게 코드 전송
-    io.emit('CODE_CHANGED', code); // 얘는 모든 사람들에게 보내는 것
-    // socket.broadcast.to(roomName).emit('CODE_CHANGED', code);
-    // socket.to(roomName).emit('CODE_CHANGED', code); // "코드변경" 이벤트 다른 소켓들에게 알림
+    socket.broadcast.to(roomName).emit('CODE_CHANGED', code); // 자기 제외 같은 방 사람들에게 보냄
+    // io.emit('CODE_CHANGED', code); // 접속한 모든 사람들에게 보냄
+    // io.in(roomName).emit('CODE_CHANGED', code); // 방 애들 전부에게 보냄(그 방에 없어도 됨)
+    // socket.to(roomName).emit('CODE_CHANGED', code); // 방 애들 전부에게 보냄(그 방에 있어야 함)
   });
 
   socket.on('DISSCONNECT_FROM_ROOM', async ({ roomId, username }) => {});
@@ -104,7 +105,7 @@ io.on('connection', (socket) => {
     ); // 해쉬셋; key_socket.id , data_방id, 유저네임
 
     const users = await redisClient.lRange(`${roomId}:users`, 0, -1);
-    const roomName = `CONNECTED-ROOM:${roomId}`; // 방 이름
+    const roomName = `ROOMNAME:${roomId}`; // 방 이름
     console.log(`이 방 연결됨: ${roomName}`);
 
     socket.join(roomName);
@@ -140,7 +141,7 @@ io.on('connection', (socket) => {
     }
 
     // 방에 있던 사람들에게 새로운 유저 리스트 전달
-    const roomName = `ROOM:${roomId}`;
+    const roomName = `ROOMNAME:${roomId}`;
     io.in(roomName).emit('ROOM:CONNECTION', newUsers);
   });
 });
